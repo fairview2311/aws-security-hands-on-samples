@@ -1,0 +1,8 @@
+.venv/
+.venv311/
+.cache/
+__pycache__/
+.pytest_cache/
+*.pyc
+session.env
+wheels/

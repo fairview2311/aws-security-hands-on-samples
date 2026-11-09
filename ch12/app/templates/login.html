@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="login">
+  <h1>ログイン</h1>
+  <form action="/login" method="post">
+    {% include '_csrf.html' %}
+    <label for="username">ユーザー名</label>
+    <input id="username" name="username" required
+           maxlength="100" autocomplete="username">
+    <label for="password">パスワード</label>
+    <input id="password" name="password" type="password"
+           required maxlength="1024"
+           autocomplete="current-password">
+    <button type="submit">ログイン</button>
+  </form>
+</section>
+{% endblock %}

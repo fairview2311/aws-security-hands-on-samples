@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>顧客一覧</h1>
+<form action="/" method="get" class="search">
+  <label for="q">氏名で検索</label>
+  <input id="q" name="q" value="{{ query }}"
+         maxlength="300" placeholder="氏名を入力">
+  <button type="submit">検索</button>
+</form>
+<div class="customers">
+{% for customer in customers %}
+<section class="customer">
+  <h2>{{ customer.name }}</h2>
+  <p>{{ customer.company }}</p>
+  <dl>
+    <dt>メール</dt><dd>{{ customer.email }}</dd>
+    <dt>電話</dt><dd>{{ customer.phone }}</dd>
+    <dt>住所</dt><dd>{{ customer.address }}</dd>
+  </dl>
+  <h3>メモ</h3>
+  <div class="memo">{{ customer.memo }}</div>
+  <form action="/customers/{{ customer.id }}/memo"
+        method="post">
+    {% include '_csrf.html' %}
+    <label for="memo-{{ customer.id }}">メモを編集</label>
+    <textarea id="memo-{{ customer.id }}" name="memo"
+      maxlength="5000" rows="3">{{ customer.memo }}</textarea>
+    <button type="submit">保存</button>
+  </form>
+  <h3>名刺</h3>
+  {% if customer.card_url %}
+  <img src="{{ customer.card_url }}"
+       alt="{{ customer.name }}の名刺" class="card">
+  {% else %}
+  <p>名刺はまだ登録されていません。</p>
+  {% endif %}
+  <form action="/customers/{{ customer.id }}/card"
+        method="post" enctype="multipart/form-data">
+    {% include '_csrf.html' %}
+    <label for="card-{{ customer.id }}">名刺の画像</label>
+    <input id="card-{{ customer.id }}" name="image" type="file"
+           accept="image/png,image/jpeg,image/gif,image/webp"
+           required>
+    <p class="hint">PNG・JPEG・GIF・WebP、2 MiB 以下</p>
+    <button type="submit">アップロード</button>
+  </form>
+</section>
+{% else %}
+<p>該当する顧客はいません。</p>
+{% endfor %}
+</div>
+<section>
+  <h2>会社のロゴ</h2>
+  {% if logo_url %}
+  <img src="{{ logo_url }}" alt="会社のロゴ" class="logo">
+  {% endif %}
+  <form action="/logo/import" method="post">
+    {% include '_csrf.html' %}
+    <label for="logo-url">画像の URL</label>
+    <input id="logo-url" name="url" type="url" required
+           maxlength="2048" placeholder="https://…">
+    <button type="submit">取り込む</button>
+  </form>
+  {% if preview is defined and preview is not none %}
+  <pre class="preview">{{ preview }}</pre>
+  {% endif %}
+</section>
+{% endblock %}

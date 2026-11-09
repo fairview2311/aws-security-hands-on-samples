@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>みどり文具 顧客管理</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <p class="brand">みどり文具株式会社</p>
+    <p>顧客管理</p>
+    {% if request.session.get('user_id') %}
+    <form action="/logout" method="post">
+      {% include '_csrf.html' %}
+      <button type="submit">ログアウト</button>
+    </form>
+    {% endif %}
+  </header>
+  <main>
+    {% if error %}
+    <p class="error" role="alert">{{ error }}</p>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

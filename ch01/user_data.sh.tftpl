@@ -1,0 +1,59 @@
+#!/bin/bash
+# EC2 の初回起動で、顧客管理アプリを入れて起動する
+set -euo pipefail
+
+# 固定の IP アドレスが付いてインターネットに出られるまで待つ（最大5分）
+for i in $(seq 30); do
+  dnf install -y python3.12 python3.12-pip unzip && break
+  sleep 10
+done
+useradd --system --home /opt/app app || true
+mkdir -p /opt/app
+# 権限が届くまで少し待つことがあるので、10回まで試す
+for i in $(seq 10); do
+  aws s3 cp "${deploy_obj}" /tmp/app.zip --region "${region}" && break
+  sleep 10
+done
+unzip -o /tmp/app.zip -d /opt/app
+
+python3.12 -m venv /opt/app/.venv
+# 依存パッケージは zip に入れた wheels から入れる（インターネットの PyPI に
+# 頼らないので、第7章でプライベートのサブネットに移っても同じ手順で動く）
+/opt/app/.venv/bin/pip install --no-index --find-links /opt/app/wheels \
+  -r /opt/app/requirements.txt
+
+# 演習用の脆弱性（第4章で直す）。パスワードを設定ファイルに平文で書いている
+cat > /opt/app/config.ini <<'CONF'
+[database]
+host = ${db_host}
+port = 5432
+name = customers
+user = app_admin
+password = ${db_password}
+
+[aws]
+region = ${region}
+bucket = ${bucket}
+CONF
+
+# セッションの署名の鍵。HTTPS にするまでは Cookie の Secure を外す（第8章で戻す）
+cat > /opt/app/session.env <<ENV
+SESSION_SECRET=$(openssl rand -hex 32)
+COOKIE_SECURE=false
+ENV
+
+chown -R app:app /opt/app
+chmod 600 /opt/app/config.ini /opt/app/session.env
+cd /opt/app
+# ログインのパスワードはファイルで渡し、使い終わったら消す
+cat > /opt/app/seed.pw <<'PW'
+${app_password}
+PW
+chown app:app /opt/app/seed.pw
+chmod 600 /opt/app/seed.pw
+sudo -u app bash -c \
+  '.venv/bin/python seed.py --password "$(cat /opt/app/seed.pw)"'
+rm -f /opt/app/seed.pw
+cp /opt/app/midori-customers.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now midori-customers

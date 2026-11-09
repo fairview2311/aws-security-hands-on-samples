@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PassAnyRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ReadCards",
+      "Effect": "Allow",
+      "Action": "s3:GetObjekt",
+      "Resource": "arn:aws:s3:::example-bucket/*"
+    }
+  ]
+}

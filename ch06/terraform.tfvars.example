@@ -1,0 +1,4 @@
+# terraform.tfvars にコピーして値を書く（terraform.tfvars は Git に入れない）
+# 第4章から、パスワードはここに書かない（Secrets Manager に置く）
+allowed_cidr   = "203.0.113.10/32"
+ssh_public_key = "ssh-ed25519 AAAA... yamada-taro"

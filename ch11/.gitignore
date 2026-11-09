@@ -1,0 +1,13 @@
+# Terraform の作業ファイルと state（パスワードなどが平文で入る）
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+.build/
+# Python
+.venv/
+__pycache__/
+# SSH の鍵（第1章で作る。秘密鍵は人に渡さない）
+aws-security-book-key
+aws-security-book-key.pub
